@@ -74,7 +74,7 @@ const checkBlocked = function(req, res, next) {
     res.send('hi')
   });
 
-  app.use("*", checkBlocked);
+  //app.use("*", checkBlocked);
 
     
   app.post(

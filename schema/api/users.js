@@ -4,13 +4,14 @@ var bcrypt = require('bcrypt-nodejs');
 var crypto = require('crypto');
 var _ = require('lodash');
 
-const authTypes = ['github', 'twitter', 'facebook', 'google'];
+const authTypes = ['apple', 'facebook', 'google', 'socialLogin'];
 var mongoosePaginate = require('mongoose-paginate');
 var mongooseAggregatePaginate = require('mongoose-aggregate-paginate');
 
 var Schema = mongoose.Schema;
 var UserSchema = new Schema({
-            name        : { type: String, default: '' },
+            name            : { type: String, default: '' },
+            provider        : { type: String, default: '' },
             profileImage    : { type: String, default: '' },
             selfieImage     : { type: String, default: '' },
             nickName        : { type: String, default: '' },
@@ -19,7 +20,20 @@ var UserSchema = new Schema({
             photo           : { type: String },
             imageMediumPath : { type: String },
             imageThumbPath  : { type: String },
-            email           : { type: String, default: '' },
+            email           : {
+                                type: String,
+                                lowercase: true,
+                                required: function() {
+                                  console.log('this.name email-->',this.socialLogin.type)
+                                  console.log('this.name email-->',this.deviceId)
+
+                                  if (authTypes.indexOf(this.socialLogin.type) === -1) {
+                                    return true;
+                                  } else {
+                                    return false;
+                                  }
+                                }
+                              },
             contactNumber   : { type: String, default: '' },
             location        : { type: String, default: '' },
             age             : { type: Number },
@@ -29,11 +43,24 @@ var UserSchema = new Schema({
             email_verify    : { type: Boolean, default: false },
             otp             : { type: String, default: '' },
             salt            : String,
-            password        : { type: String, default: '' },
+            password        : {
+                                type: String,
+                                required: function() {
+                                  if (authTypes.indexOf(this.socialLogin.type) === -1) {
+                                    return true;
+                                  } else {
+                                    return false;
+                                  }
+                                }
+                              },
             authToken       : { type: String, default: '' },
             appType         : { type: String, enum: ['IOS', 'ANDROID', 'BROWSER']},
             role            : { type: String, enum: ['user', 'admin'], default:'user'},
-            socialLogin     : { type:Object },
+            socialLogin     : { 
+                                socialId : { type: String, default: '' },
+                                image    : { type: String, default: '' },      
+                                type     : { type: String, default: '' }           
+                              },
             deviceToken     : { type: String, default: '' },
             deviceId        : { type: String, default: '' },
             status          : { type: Boolean, default: true },
@@ -47,21 +74,6 @@ var UserSchema = new Schema({
     {
      timestamps: true
     });
-// UserSchema.pre('save', function (next) {
-//     var user = this;
-//     if (!user.isModified('password'))
-//         return next();
-    
-//     bcrypt.hash(user.password, null, null, function (err, hash) {
-//         if (err) {
-//             return next(err);
-//         }
-//         if(user.password !== ""){
-//             user.password = hash;
-//         }
-//         next();
-//     });
-// });
 
 
 
@@ -97,7 +109,9 @@ UserSchema
 UserSchema
   .path('email')
   .validate(function(email) {
-    if (authTypes.indexOf(this.provider) !== -1) {
+    console.log('this.socialLogin.type email-->',this.socialLogin.type)
+
+    if (authTypes.indexOf(this.socialLogin.type) !== -1) {
       return true;
     }
     return email.length;
@@ -107,7 +121,9 @@ UserSchema
 UserSchema
   .path('password')
   .validate(function(password) {
-    if (authTypes.indexOf(this.provider) !== -1) {
+    console.log('this.socialLogin.type password-->',this.socialLogin.type)
+
+    if (authTypes.indexOf(this.socialLogin.type) !== -1) {
       return true;
     }
     return password.length;
@@ -118,7 +134,10 @@ UserSchema
   .path('email')
   .validate(function(value, respond) {
     var self = this;
-    if (authTypes.indexOf(this.provider) !== -1) {
+    console.log('this.socialLogin.type-->',this.socialLogin.type)
+    console.log('this.authTypes-->',authTypes)
+    if (authTypes.indexOf(this.socialLogin.type) !== -1) {
+
       return respond(true);
     }
 
@@ -158,9 +177,8 @@ UserSchema
     if (!this.isModified('password')) {
       return next();
     }
-    this.markModified('membershipLevel');
     if (!validatePresenceOf(this.password)) {
-      if (authTypes.indexOf(this.provider) === -1) {
+      if (authTypes.indexOf(this.socialLogin.type) === -1) {
         return next(new Error('Invalid password'));
       } else {
         return next();

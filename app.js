@@ -7,7 +7,7 @@ var path = require('path');
 var methodOverride = require('method-override');
 var _ = require('lodash');
 var config = require("./config");
-var userSchema = require("./schema/api/users");
+var UserSchema = require("./schema/api/users");
 
 const { generateMessage, generateLocationMessage } = require('./utils/messages')
 const { addUser, removeUser, getUser, getUsersInRoom } = require('./utils/users')

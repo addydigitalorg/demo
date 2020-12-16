@@ -12,6 +12,15 @@ class UserTempValidator {
 	    			min: 'must be greater than or equal to 2 characters'
 	    		}
 	    	}
+		}),
+		
+	    provider: joibird.string().options({
+	    	language: {
+	    		key: 'provider ',
+	    		string: {
+	    			min: 'provider'
+	    		}
+	    	}
 	    }),
 	    contactNumber: joibird.string().min(10).required().options({
 	    	language: {
@@ -34,6 +43,39 @@ class UserTempValidator {
 	    		}
 	    	}
 	    })
+		});
+		return joibird.validate(body, schema, {
+			stripUnknown: true,
+			abortEarly: false
+		});
+	}
+
+	static validateSocialLogin(body)  {
+		var schema = joibird.object().keys({
+	    name: joibird.string().required().options({
+	    	language: {
+	    		key: 'name ',
+	    		string: {
+	    			min: 'name required'
+	    		}
+	    	}
+		}),
+		deviceId: joibird.string().required().options({
+	    	language: {
+	    		key: 'deviceId ',
+	    		string: {
+	    			min: 'name required'
+	    		}
+	    	}
+		}),
+		socialLogin: joibird.required().options({
+	    	language: {
+	    		key: 'socialLogin ',
+	    		string: {
+	    			min: 'name required'
+	    		}
+	    	}
+		}),
 		});
 		return joibird.validate(body, schema, {
 			stripUnknown: true,

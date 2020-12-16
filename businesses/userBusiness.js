@@ -53,7 +53,9 @@ class UserBusiness {
     var limit = 0;
     var sort = 'createdAt';
     var order = -1;
-    if(params.id != 'undefined'){
+    if(params._id !== undefined){
+      console.log('params._id hitted',params._id);
+
       condition = {
       _id: {$eq: new ObjectId(params.id)}
       }

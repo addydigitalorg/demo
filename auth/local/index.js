@@ -43,7 +43,7 @@ router.post('/', function(req, res, next) {
         //   });
         // }
   
-        guser.authenticate(req.body.password, function(err, isCorrect) {
+        guser.authenticate(req.body.password, async function(err, isCorrect) {
           if (err || !isCorrect) {
             return res.status(401).send({
               verified: false
@@ -51,6 +51,13 @@ router.post('/', function(req, res, next) {
           }
   
           var token = signToken(guser._id, 'guser');
+          await UserSchema.update(
+            {_id: guser._id},
+            {
+            $set :{
+              authToken: token
+            }
+            })
           res.json({ token , guser:guser});
         });
       });

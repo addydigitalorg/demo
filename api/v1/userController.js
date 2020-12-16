@@ -39,7 +39,7 @@ class UserController {
 		if(req.query.offset!='undefined'){
 			req.query.offset = parseInt(req.query.offset);
     }
-    console.log('index hitted');
+    console.log('index hitted',req.query);
     
     return UserBusiness.find(req.query)
       .then(users => {
@@ -98,6 +98,7 @@ class UserController {
    * Creates a new user
    */
   static create(req, res, next) {
+    console.log('register api hitted')
     UserValidator.validateCreating(req.body).then(user => {
      // user.imageType = config.imageType;
       user.name = req.body.name;
@@ -108,52 +109,29 @@ class UserController {
         user.role = req.body.role;
       }
       user.emailVerifiedToken = Helper.StringHelper.randomString(48);
-      // async.waterfall([
-      //   function(cb) {
-      //   console.log('req.files--',req.files)
-
-      //     // if (!req.files.file) {
-      //     //   return  cb();
-      //     // }
-      //     user.imageType = config.imageType;
-      //     console.log('req.config.imageType--',config.imageType)
-
-      //     let Func = config.imageType == 's3' ? Uploader.uploadImageWithThumbnailsToS3 : Uploader.uploadImageWithThumbnails;
-      //     console.log('req.user._id--',user.email)
-        
-      //     Func(req.files.file, user.email, function(err, result) {
-      //      console.log('result--',result)
-
-      //       user.photo  = result.imageFullPath;
-      //       user.imageMediumPath  = result.imageMediumPath;
-      //       user.imageThumbPath  = result.imageThumbPath;
-      //       cb();
-      //     });
-      //   }
-      // ], function() {
-        
+             
         let otp = Math.random().toString().replace('0.', '').substr(0, 4);
-
+      console.log('user',user)
         UserBusiness.create(user)
           .then((data) => {
+            console.log('user',user)
+
             mailProperty('emailVerificationMail')(data.email, {
               name: data.name,
               email: data.email,
               verification_code: otp,
               site_url: config.liveUrl,
               date: new Date()
-          }).send();
-            // Mailer.sendMail('verify-email.html', data.email,
-            // {
-            //   subject: 'Verify email address',
-            //   user: data.toObject(),
-            //   emailVerifyLink: config.baseUrl + `api/v1/users/verifyEmail/${data.emailVerifiedToken}`,
-            //   siteName: config.siteName
-            // });
+            }).send();
+
             res.status(200).json(data)
           })
-          .catch(err => res.status(400).json(err));
-      //});
+          .catch((err) => {
+            console.log('err',err)
+
+            res.status(400).json(err)
+          
+          });
     })
     .catch(err => res.status(400).json(err));
   }
