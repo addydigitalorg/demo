@@ -5,23 +5,24 @@ class UserTempValidator {
 	static validateCreating(body)  {
 		var schema = joibird.object().keys({
 
-	    name: joibird.string().min(2).required().options({
+	    firstName: joibird.string().min(2).required().options({
 	    	language: {
-	    		key: 'Name ',
+	    		key: 'FirstName ',
 	    		string: {
 	    			min: 'must be greater than or equal to 2 characters'
 	    		}
 	    	}
 		}),
 		
-	    provider: joibird.string().options({
+	    lastName: joibird.string().min(2).required().options({
 	    	language: {
-	    		key: 'provider ',
+	    		key: 'LastName ',
 	    		string: {
-	    			min: 'provider'
+	    			min: 'must be greater than or equal to 2 characters'
 	    		}
 	    	}
-	    }),
+		}),
+
 	    contactNumber: joibird.string().min(10).required().options({
 	    	language: {
 	    		key: 'ContactNumber ',
@@ -30,11 +31,13 @@ class UserTempValidator {
 	    		}
 	    	}
 		}),
+
 		email: joibird.string().email().required().options({
 	    	language: {
 	    		key: 'Email '
 	    	}
-	    }),
+		}),
+		
 	    password: joibird.string().min(6).required().options({
 	    	language: {
 	    		key: 'Password ',
@@ -52,14 +55,24 @@ class UserTempValidator {
 
 	static validateSocialLogin(body)  {
 		var schema = joibird.object().keys({
-	    name: joibird.string().required().options({
+	    firstName: joibird.string().required().options({
 	    	language: {
-	    		key: 'name ',
+	    		key: 'firstName ',
 	    		string: {
-	    			min: 'name required'
+	    			min: 'firstName required'
 	    		}
 	    	}
 		}),
+		
+	    lastName: joibird.string().required().options({
+	    	language: {
+	    		key: 'lastName ',
+	    		string: {
+	    			min: 'lastName required'
+	    		}
+	    	}
+		}),
+
 		deviceId: joibird.string().required().options({
 	    	language: {
 	    		key: 'deviceId ',
@@ -76,6 +89,32 @@ class UserTempValidator {
 	    		}
 	    	}
 		}),
+		});
+		return joibird.validate(body, schema, {
+			stripUnknown: true,
+			abortEarly: false
+		});
+	}
+
+	
+	static validateLogin(body)  {
+		var schema = joibird.object().keys({
+	    email: joibird.string().required().options({
+	    	language: {
+	    		key: 'email ',
+	    		string: {
+	    			min: 'email required'
+	    		}
+	    	}
+		}),
+	    password: joibird.string().required().options({
+	    	language: {
+	    		key: 'password ',
+	    		string: {
+	    			min: 'password required'
+	    		}
+	    	}
+		})
 		});
 		return joibird.validate(body, schema, {
 			stripUnknown: true,

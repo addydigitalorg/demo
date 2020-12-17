@@ -91,8 +91,8 @@ class UserBusiness {
    * @param  {Object} params Mongo query
    * @return {Promise}
    */
-  static findOne(params) {
-    return UserSchema.findOne(params, '-salt -password').exec();
+  static findOne(params) {    
+    return UserSchema.findOne(params).exec();
   }
 
   static findOneByAdmin(params) {

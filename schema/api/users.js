@@ -10,8 +10,8 @@ var mongooseAggregatePaginate = require('mongoose-aggregate-paginate');
 
 var Schema = mongoose.Schema;
 var UserSchema = new Schema({
-            name            : { type: String, default: '' },
-            provider        : { type: String, default: '' },
+            firstName       : { type: String, default: '' },
+            lastName        : { type: String, default: '' },
             profileImage    : { type: String, default: '' },
             selfieImage     : { type: String, default: '' },
             nickName        : { type: String, default: '' },
@@ -86,7 +86,7 @@ UserSchema
   .virtual('profile')
   .get(function() {
     return {
-      'name': this.name,
+      'firstName': this.firstName,
       'role': this.role
     };
   });
@@ -310,7 +310,6 @@ UserSchema.methods = {
 
   publicProfile() {
     return _.pick(this, [
-      'name',
       'firstName',
       'lastName',
       'phone',

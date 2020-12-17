@@ -100,8 +100,8 @@ class UserController {
   static create(req, res, next) {
     console.log('register api hitted')
     UserValidator.validateCreating(req.body).then(user => {
-     // user.imageType = config.imageType;
-      user.name = req.body.name;
+      user.firstName = req.body.firstName;
+      user.lastName = req.body.lastName;
       user.email = req.body.email;
       user.contactNumber = req.body.contactNumber;
       user.status = req.body.status;
@@ -111,7 +111,8 @@ class UserController {
       user.emailVerifiedToken = Helper.StringHelper.randomString(48);
              
         let otp = Math.random().toString().replace('0.', '').substr(0, 4);
-      console.log('user',user)
+        console.log('user',user)
+        user.otp = otp
         UserBusiness.create(user)
           .then((data) => {
             console.log('user',user)
@@ -124,16 +125,32 @@ class UserController {
               date: new Date()
             }).send();
 
-            res.status(200).json(data)
+            res.status(200)
+                .send(
+                  {
+                    statuscode:401,
+                    message:err.message,
+                    response:err
+                  });
           })
           .catch((err) => {
             console.log('err',err)
 
-            res.status(400).json(err)
+            res.status(401).send(
+              {
+                statuscode:401,
+                message:err.message,
+                response:err
+              });
           
           });
     })
-    .catch(err => res.status(400).json(err));
+    .catch(err => res.status(400)
+    .send({
+        statuscode:401,
+        message:err.message,
+        response:err
+      }));
   }
 
   static verifyEmail(req, res, next) {
