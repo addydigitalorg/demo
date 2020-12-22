@@ -43,11 +43,200 @@ class UserController {
     
     return UserBusiness.find(req.query)
       .then(users => {
-        res.status(200).json(users);
+        
+        res.status(200)
+        .send(
+          {
+            statuscode:200,
+            message:"User List",
+            response:users
+          });
       })
-      .catch(handleError(res));
+      .catch((err) => {
+        
+        res.status(401).send(
+          {
+            statuscode:401,
+            message:err.message,
+            response:err
+          });
+      
+      });
   }
 
+  /**
+   * Creates a new user
+   */
+  static create(req, res, next) {
+
+    UserValidator.validateCreating(req.body).then(user => {
+      user.firstName = req.body.firstName;
+      user.lastName = req.body.lastName;
+      user.email = req.body.email;
+      user.contactNumber = req.body.contactNumber;
+      user.status = req.body.status;
+      if (req.user && req.user.role === 'admin') {
+        user.role = req.body.role;
+      }
+      user.emailVerifiedToken = Helper.StringHelper.randomString(48);
+             
+        UserBusiness.create(user)
+          .then((data) => {
+
+            res.status(200)
+                .send(
+                  {
+                    statuscode:200,
+                    message:"User Register Successfully.",
+                    response:data
+                  });
+          })
+          .catch((err) => {
+            
+            res.status(401).send(
+              {
+                statuscode:401,
+                message:err.message,
+                response:err
+              });
+          
+          });
+    })
+    .catch(err => res.status(400)
+    .send({
+        statuscode:401,
+        message:err.message,
+        response:err
+      }));
+  }
+
+
+   /**
+   * Update Profile User
+   */
+  static update(req, res, next) {
+    //TODO - update validator
+    UserValidator.validateUpdating({...req.body, ...req.params}).then(user => {
+
+    var userId = req.params.id;
+    UserBusiness.findOne({_id: userId})
+      .then(user => {
+        if (!user) {
+          return  res.status(200)
+          .send(
+            {
+              statuscode:404,
+              message:"User Not Exist.",
+              response:{}
+            });
+        }
+        user.firstName = req.body.firstName?req.body.firstName:user.firstName;
+        user.lastName = req.body.lastName?req.body.lastName:user.lastName;
+        user.email = req.body.email?req.body.email:user.email;
+        user.contactNumber = req.body.contactNumber?req.body.contactNumber:user.contactNumber;
+        user.status = ( 
+                        (req.body.status === true || req.body.status == 'true') || 
+                        (req.body.status === false || req.body.status == 'false') 
+                      ) ? req.body.status:user.status;
+
+        if(req.body.password!='' && typeof req.body.password !='undefined'){
+          user.password = req.body.password;
+        }
+        user.role = req.body.role?req.body.role:user.role;
+        user.emailVerify = req.body.emailVerify?req.body.emailVerify:user.emailVerify;
+
+          UserBusiness.update(user)
+            .then((updatedUserList) => {
+                res.status(200)
+                .send(
+                  {
+                    statuscode:200,
+                    message:"User Updated Successfully",
+                    response:updatedUserList
+                  });
+            })           
+            .catch((err) => {
+              
+              res.status(401).send(
+                {
+                  statuscode:401,
+                  message:err.message,
+                  response:err
+                });
+            
+            });
+        
+    })
+  })
+  .catch((err) => 
+  {
+    res.status(400)
+      .send({
+          statuscode:401,
+          message:err.cause.details[0].message,
+          response:err
+      });
+  });
+  }
+
+  /**
+   * Deletes a user
+   * restriction: 'admin'
+   */
+  static delete(req, res) {
+
+    UserValidator.validateUpdating(req.params).then(user => {
+
+        UserBusiness.findOne({_id: req.params.id})
+        .then(user => {
+
+            return UserBusiness.delete(req.params.id)
+                .then(function() {
+                  res.status(200)
+                  .send(
+                    {
+                      statuscode:200,
+                      message:"User deleted Successfully",
+                      response:user
+                    });
+                })      
+                .catch((err) => {
+                  
+                  res.status(401).send(
+                    {
+                      statuscode:401,
+                      message:err.message,
+                      response:err
+                    });
+                
+                });
+        
+            })
+            .catch((err) => {
+                      
+              res.status(401).send(
+                {
+                  statuscode:401,
+                  message:err.message,
+                  response:err
+                });
+            
+            }) 
+    }) 
+    .catch((err) => 
+    {
+      res.status(400)
+        .send({
+            statuscode:401,
+            message:err.cause.details[0].message,
+            response:err
+        });
+    });
+  }
+
+
+
+  
   /**
    * Forgot password
    */
@@ -93,66 +282,10 @@ class UserController {
       });
     });
   }
-
+  
   /**
-   * Creates a new user
+   * Verify Email
    */
-  static create(req, res, next) {
-    console.log('register api hitted')
-    UserValidator.validateCreating(req.body).then(user => {
-      user.firstName = req.body.firstName;
-      user.lastName = req.body.lastName;
-      user.email = req.body.email;
-      user.contactNumber = req.body.contactNumber;
-      user.status = req.body.status;
-      if (req.user && req.user.role === 'admin') {
-        user.role = req.body.role;
-      }
-      user.emailVerifiedToken = Helper.StringHelper.randomString(48);
-             
-        let otp = Math.random().toString().replace('0.', '').substr(0, 4);
-        console.log('user',user)
-        user.otp = otp
-        UserBusiness.create(user)
-          .then((data) => {
-            console.log('user',user)
-
-            mailProperty('emailVerificationMail')(data.email, {
-              name: data.name,
-              email: data.email,
-              verification_code: otp,
-              site_url: config.liveUrl,
-              date: new Date()
-            }).send();
-
-            res.status(200)
-                .send(
-                  {
-                    statuscode:401,
-                    message:err.message,
-                    response:err
-                  });
-          })
-          .catch((err) => {
-            console.log('err',err)
-
-            res.status(401).send(
-              {
-                statuscode:401,
-                message:err.message,
-                response:err
-              });
-          
-          });
-    })
-    .catch(err => res.status(400)
-    .send({
-        statuscode:401,
-        message:err.message,
-        response:err
-      }));
-  }
-
   static verifyEmail(req, res, next) {
     if (!req.params.token) {
       return res.status(404).send({
@@ -195,27 +328,6 @@ class UserController {
     .catch(err => next(err));
   }
 
-  /**
-   * Deletes a user
-   * restriction: 'admin'
-   */
-  static destroy(req, res) {
-    UserBusiness.findOne({_id: req.params.id})
-    .then(user => {
-     UserTempBusiness.findOne({email: user.email}).then(userTemp => {
-       if(userTemp){
-         UserTempBusiness.removeById(userTemp._id).then(function(res){
-
-         })
-       }
-        return UserBusiness.removeById(req.params.id)
-            .then(function() {
-              res.status(200,true).end();
-            }).catch(handleError(res));
-     });
-    })
-    .catch(err => next(err));
-  }
 
   /**
    * Check User Expire Date
@@ -402,53 +514,6 @@ class UserController {
     req.user.save((err, user) => res.status(200).json(user));
   }
 
-   /**
-   * Update Profile User
-   */
-  static update(req, res, next) {
-    //TODO - update validator
-    var userId = req.body._id;
-    UserBusiness.findOneByAdmin({_id: userId})
-      .then(user => {
-        if (!user) {
-          return res.status(404).send();
-        }
-
-        user.name = req.body.name;
-        user.email = req.body.email;
-        user.phone = req.body.phone;
-        user.status = req.body.status;
-
-        if(req.body.password!='' && typeof req.body.password !='undefined'){
-          user.password = req.body.password;
-        }
-        user.isVip = req.body.isVip;
-        user.isBuyProduct = req.body.isBuyProduct;
-        user.role = req.body.role;
-        user.dateExpire = req.body.dateExpire;
-        user.emailVerified = req.body.emailVerified;
-        async.waterfall([
-          function(cb) {
-            if (!req.files.file) {
-              return  cb();
-            }
-
-            user.imageType = config.imageType;
-            let Func = config.imageType == 's3' ? Uploader.uploadImageWithThumbnailsToS3 : Uploader.uploadImageWithThumbnails;
-            Func(req.files.file, req.user._id, function(err, result) {
-              user.photo  = result.imageFullPath;
-              user.imageMediumPath  = result.imageMediumPath;
-              user.imageThumbPath  = result.imageThumbPath;
-              cb();
-            });
-          }
-        ], function() {
-          UserBusiness.update(user)
-            .then(() => res.status(200).json(user))
-            .catch(err => validationError(res, 422)(parseJoiError(err)));
-        });
-    });
-  }
 
   /**
    * Update Photo User

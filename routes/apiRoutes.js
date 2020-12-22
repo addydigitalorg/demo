@@ -85,11 +85,24 @@ const checkBlocked = function(req, res, next) {
    app.get(
      "/v1/users",  
      userController.index
-     );
+  );
+
+   app.put(
+      "/v1/users/:id",
+      userController.update
+   );
+   
+   app.delete(
+    "/v1/users/:id",
+    userController.delete
+  );
+
+
+
+
 
 
   // Insert routes below
-  app.get("/api/v1/users/me", auth.isAuthenticated(), userController.me);
   app.put(
     "/api/v1/users/password",
     auth.isAuthenticated(),
@@ -138,18 +151,9 @@ const checkBlocked = function(req, res, next) {
     userController.removeWatchLaterVideo
   );
   app.post("/api/v1/users/forgot", userController.forgot);
-  app.delete(
-    "/api/v1/users/:id",
-    auth.hasRole("admin"),
-    userController.destroy
-  );
+
   app.get("/api/v1/users/:id", auth.hasRole("admin"), userController.show);
-  app.put(
-    "/api/v1/users/:id",
-    auth.hasRole("admin"),
-    multipartMiddleware,
-    userController.update
-  );
+
   //app.get("/api/v1/users", auth.hasRole("admin"), userController.index);
   app.get("/api/v1/users/check/uservip", userController.checkVip);
 

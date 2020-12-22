@@ -15,6 +15,9 @@ var router = express.Router();
 
 router.use('/local', require('./local'));
 router.use('/socialLogin', require('./socialLogin'));
+router.use('/sendEmailVerificationOtp', require('./sendEmailVerificationOtp'));
+router.use('/emailVerificationOtp', require('./emailVerificationOtp'));
+router.use('/forgotPassword', require('./forgotPassword'));
 // router.use('/facebook', require('./facebook').default);
 // router.use('/twitter', require('./twitter').default);
 // router.use('/google', require('./google').default);

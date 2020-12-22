@@ -57,7 +57,7 @@ class UserBusiness {
       console.log('params._id hitted',params._id);
 
       condition = {
-      _id: {$eq: new ObjectId(params.id)}
+      _id: {$eq: new ObjectId(params._id)}
       }
     }
 
@@ -100,8 +100,13 @@ class UserBusiness {
   }
 
   static forgotPassword(params,newPass) {
-    return UserSchema.findOne(params, '-salt -password').exec().then((user) => {
-         user.password = newPass;
+    console.log('business newPass---',newPass)
+    console.log('business params---',params)
+    return UserSchema.findOne(params, '-salt -password -socialLogin, -otp').exec().then((user) => {
+    console.log('business user---',user)
+    user.password = newPass;
+    user.otp = "";
+
          UserBusiness.update(user)
           .then((user) => {
 
@@ -115,7 +120,7 @@ class UserBusiness {
    * @param  {String} id
    * @return {Promise}
    */
-  static removeById(id) {
+  static delete(id) {
     return UserSchema.findByIdAndRemove(id).exec()
     .then(() => {
 

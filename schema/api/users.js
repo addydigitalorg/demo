@@ -13,7 +13,6 @@ var UserSchema = new Schema({
             firstName       : { type: String, default: '' },
             lastName        : { type: String, default: '' },
             profileImage    : { type: String, default: '' },
-            selfieImage     : { type: String, default: '' },
             nickName        : { type: String, default: '' },
             gender          : { type: String },
             imageType       : { type: String },
@@ -40,7 +39,7 @@ var UserSchema = new Schema({
             country         : { type: String, default: '' },
             city            : { type: String, default: '' },
             dob             : { type: Date},
-            email_verify    : { type: Boolean, default: false },
+            emailVerify     : { type: Boolean, default: false },
             otp             : { type: String, default: '' },
             salt            : String,
             password        : {
@@ -185,6 +184,9 @@ UserSchema
       }
     }
 
+    // if (authTypes.indexOf(this.socialLogin.type) !== -1) {
+    //   return next();
+    // }
     // Make salt with a callback
     this.makeSalt((saltErr, salt) => {
       if (saltErr) {

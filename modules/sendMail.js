@@ -21,10 +21,6 @@ module.exports = function(mailType) {
             subject : "Email Verification",
             html    : require('./emailVerificationMail'),
         },
-        "forgotPasswordMail" :{
-            subject : "Email For Forgot Password",
-            html    : require('./forgotPasswordMail'),
-        },
         "resetPasswordMail" :{
             subject : "Email For Reset Password",
             html    : require('./resetPasswordMail'),

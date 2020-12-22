@@ -122,6 +122,111 @@ class UserTempValidator {
 		});
 	}
 
+	
+	
+	static validateUpdating(body)  {
+		var schema = joibird.object().keys({
+	    id: joibird.string().required().options({
+	    	language: {
+	    		key: 'id ',
+	    		string: {
+	    			min: 'id required'
+	    		}
+	    	}
+		})
+		});
+		return joibird.validate(body, schema, {
+			stripUnknown: true,
+			abortEarly: false
+		});
+	}
+
+	static validateForgotPassword(body)  {
+		var schema = joibird.object().keys({
+		
+		_id: joibird.string().required().options({
+			language: {
+				key: '_id ',
+				string: {
+					min: '_id required'
+				}
+			}
+		}),
+
+	    password: joibird.string().min(6).required().options({
+	    	language: {
+	    		key: 'Password ',
+	    		string: {
+	    			min: 'must be greater than or equal to 6 characters'
+	    		}
+	    	}
+		}),
+		
+	    confirmPassword: joibird.any().valid(joibird.ref('password')).required().options({
+	    	language: {
+	    		key: 'Confirm Password ',
+	    		any: {
+	    			allowOnly: 'must be equal to Password'
+	    		}
+	    	}
+		})
+		
+		});
+		return joibird.validate(body, schema, {
+			stripUnknown: true,
+			abortEarly: false
+		});
+	}
+	
+
+	static validateEmailVerification(body)  {
+		var schema = joibird.object().keys({
+		
+		email: joibird.string().required().options({
+			language: {
+				key: 'email ',
+				string: {
+					min: 'email required'
+				}
+			}
+		}),
+
+	    otp: joibird.any().required().options({
+	    	language: {
+	    		key: 'otp ',
+	    		string: {
+	    			min: 'otp required'
+	    		}
+	    	}
+		})
+		
+		});
+		return joibird.validate(body, schema, {
+			stripUnknown: true,
+			abortEarly: false
+		});
+	}
+
+
+	static validateSendEmailVerification(body)  {
+		var schema = joibird.object().keys({
+		
+		email: joibird.string().required().options({
+			language: {
+				key: 'email ',
+				string: {
+					min: 'email required'
+				}
+			}
+		})
+		
+		});
+		return joibird.validate(body, schema, {
+			stripUnknown: true,
+			abortEarly: false
+		});
+	}
+
 	static validateResetPassword(body)  {
 		var schema = joibird.object().keys({
 	    password: joibird.string().min(6).required().options({
