@@ -150,6 +150,7 @@ class UserController {
 
         if( req.files && req.files.photo)
         {
+          //console
          if(user.photo && user.photo!=''){
               UserBusiness.unlinkFile(user.photo)
               .then( unlinkres => { console.log('unlinkres-',unlinkres)})
@@ -158,7 +159,7 @@ class UserController {
                   {
                     statuscode:401,
                     message:err.message,
-                    response:err
+                    response:err 
                   });
                 })
           }
