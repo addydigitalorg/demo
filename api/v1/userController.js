@@ -150,7 +150,7 @@ class UserController {
 
         if( req.files && req.files.photo)
         {
-          //console
+          //console.log('')
          if(user.photo && user.photo!=''){
               UserBusiness.unlinkFile(user.photo)
               .then( unlinkres => { console.log('unlinkres-',unlinkres)})
