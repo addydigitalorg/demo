@@ -1,4 +1,5 @@
 var { UserSchema } =require('../schema/api')
+var fs = require('fs')
 
 class UserBusiness {
   /**
@@ -126,6 +127,30 @@ class UserBusiness {
 
       return true;
     });
+  }
+  /**
+   * Unlink all data by query
+   * @param  {Object} data user data
+   * @return {Promise}
+   */
+  static unlinkFile(params) {
+    //TODO - code me
+    let promise = new Promise((resolve, reject) => {
+
+      let filePath = `./public/${params}`;
+      fs.unlink(filePath, (err) => {
+          if (err) {
+              console.log('err', err);
+              reject(err)
+          } else {
+              console.log(params + ' was deleted');
+              resolve(params + ' was deleted');
+
+          }
+      });
+    });
+
+    return promise;
   }
 }
 

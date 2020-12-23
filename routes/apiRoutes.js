@@ -89,85 +89,83 @@ const checkBlocked = function(req, res, next) {
 
    app.put(
       "/v1/users/:id",
+      auth.isAuthenticated(),
       userController.update
    );
    
    app.delete(
     "/v1/users/:id",
+    auth.isAuthenticated(),
     userController.delete
   );
 
 
-
-
-
-
   // Insert routes below
-  app.put(
-    "/api/v1/users/password",
-    auth.isAuthenticated(),
-    userController.changePassword
-  );
-  app.put(
-    "/api/v1/users/:id/update-profile",
-    auth.isAuthenticated(),
-    userController.updateProfile
-  );
-  app.post(
-    "/api/v1/users/photo",
-    auth.isAuthenticated(),
-    multipartMiddleware,
-    userController.updatePhoto
-  );
-  // app.post(
-  //   "/api/v1/users",
-  //   auth.loadUser(),
-  //   multipartMiddleware,
-  //   userController.create
+  // app.put(
+  //   "/api/v1/users/password",
+  //   auth.isAuthenticated(),
+  //   userController.changePassword
   // );
-  app.post(
-    "/api/v1/users/download",
-    auth.isAuthenticated(),
-    userController.downloadVideo
-  );
-  app.post(
-    "/api/v1/users/favorite",
-    auth.isAuthenticated(),
-    userController.favoriteVideo
-  );
-  app.put(
-    "/api/v1/users/favorite",
-    auth.isAuthenticated(),
-    userController.removeFavoriteVideo
-  );
-  app.post(
-    "/api/v1/users/watch-later",
-    auth.isAuthenticated(),
-    userController.watchLaterVideo
-  );
-  app.put(
-    "/api/v1/users/watch-later",
-    auth.isAuthenticated(),
-    userController.removeWatchLaterVideo
-  );
-  app.post("/api/v1/users/forgot", userController.forgot);
+  // app.put(
+  //   "/api/v1/users/:id/update-profile",
+  //   auth.isAuthenticated(),
+  //   userController.updateProfile
+  // );
+  // app.post(
+  //   "/api/v1/users/photo",
+  //   auth.isAuthenticated(),
+  //   multipartMiddleware,
+  //   userController.updatePhoto
+  // );
+  // // app.post(
+  // //   "/api/v1/users",
+  // //   auth.loadUser(),
+  // //   multipartMiddleware,
+  // //   userController.create
+  // // );
+  // app.post(
+  //   "/api/v1/users/download",
+  //   auth.isAuthenticated(),
+  //   userController.downloadVideo
+  // );
+  // app.post(
+  //   "/api/v1/users/favorite",
+  //   auth.isAuthenticated(),
+  //   userController.favoriteVideo
+  // );
+  // app.put(
+  //   "/api/v1/users/favorite",
+  //   auth.isAuthenticated(),
+  //   userController.removeFavoriteVideo
+  // );
+  // app.post(
+  //   "/api/v1/users/watch-later",
+  //   auth.isAuthenticated(),
+  //   userController.watchLaterVideo
+  // );
+  // app.put(
+  //   "/api/v1/users/watch-later",
+  //   auth.isAuthenticated(),
+  //   userController.removeWatchLaterVideo
+  // );
+  // app.post("/api/v1/users/forgot", userController.forgot);
 
-  app.get("/api/v1/users/:id", auth.hasRole("admin"), userController.show);
+  // app.get("/api/v1/users/:id", auth.hasRole("admin"), userController.show);
 
-  //app.get("/api/v1/users", auth.hasRole("admin"), userController.index);
-  app.get("/api/v1/users/check/uservip", userController.checkVip);
+  // //app.get("/api/v1/users", auth.hasRole("admin"), userController.index);
+  // app.get("/api/v1/users/check/uservip", userController.checkVip);
 
-  app.get("/api/v1/users/verifyEmail/:token", userController.verifyEmail);
-  //app.use("/auth", require("../auth"));
+  // app.get("/api/v1/users/verifyEmail/:token", userController.verifyEmail);
+  // //app.use("/auth", require("../auth"));
 
-  app.post("/api/v1/server/reload", auth.hasRole("admin"), function(req, res) {
-    var pm2Id = process.env.PM2_ID || 0;
-    var cmd = `pm2 reload ${pm2Id}`;
+  // app.post("/api/v1/server/reload", auth.hasRole("admin"), function(req, res) {
+  //   var pm2Id = process.env.PM2_ID || 0;
+  //   var cmd = `pm2 reload ${pm2Id}`;
 
-    exec(cmd, function(error, stdout, stderr) {
-      res.status(200).end();
-    });
-  });
+  //   exec(cmd, function(error, stdout, stderr) {
+  //     res.status(200).end();
+  //   });
+  // });
 
   // All undefined asset or api routes should return a 404
   app

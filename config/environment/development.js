@@ -62,5 +62,6 @@ module.exports = {
   tmpFolder: path.resolve(__dirname, '../../assets/.tmp'),
   useCluster: false,
   useLiverload: false,
+  userImagePath: '/uploads/images/users/',
   xssProtection: false
 };

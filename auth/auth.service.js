@@ -32,11 +32,21 @@ function isAuthenticated() {
         token = req.query.access_token;
         req.headers.authorization = 'Bearer ' + req.query.access_token;
       } else if (!req.headers.authorization) {
-        return res.status(401).send();
+        return  res.status(401).send(
+          {
+            statuscode:401,
+            message:'Please Provide Authorization Token',
+            response:{}
+          });
       } else {
         let tokenSplit = req.headers.authorization.split(' ');
         if(tokenSplit.length !== 2) {
-          return res.status(401).send();
+          return  res.status(401).send(
+            {
+              statuscode:401,
+              message:'Please Provide Correct Authorization Token',
+              response:{}
+            });
         }
 
         token = tokenSplit[1];
@@ -44,33 +54,39 @@ function isAuthenticated() {
 
       jwt.verify(token, config.secrets.session, function(err, decoded) {
         if (err) {
-          return res.status(401).send();
+          return  res.status(401).send(
+            {
+              statuscode:401,
+              message:err.message,
+              response:err
+            });
         }
-
-        if (decoded.role === 'performer') {
-          PerformerModel.findById(decoded._id).exec()
-            .then(user => {
-              if (!user || !user.isVerified || user.status === 'inactive') {
-                return res.status(401);
-              }
-
-              req.user = user;
-              req.isPerformer = true;
-              next();
-            })
-            .catch(() => res.status(401).send());
-        } else {
           UserSchema.findById(decoded._id).exec()
             .then(user => {
               if (!user) {
-                return res.status(401).send();
+                return  res.status(401).send(
+                  {
+                    statuscode:401,
+                    message:'User Not Exist',
+                    response:{}
+                  });
               }
+              console.log('user find in auth--',user)
 
               req.user = user;
               next();
             })
-            .catch(() => res.status(401).send());
-        }
+            .catch((err) => {
+              
+              res.status(401).send(
+                {
+                  statuscode:401,
+                  message:err.message,
+                  response:err
+                });
+            
+            });
+        
       });
 
     });

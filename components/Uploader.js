@@ -11,14 +11,17 @@ var StringHelper = require('../helpers/StringHelper')
 var config = require('../config/environment')
 var { UtilsHelper } = require('../helpers')
 var mv = require('mv');
+const Jimp = require('jimp');
 
 class Uploader {
 
-  static uploadImageWithThumbnails(file, email, cb){
-    console.log('email uploader--',email,file)
+  static uploadImageWithThumbnails(file, id, module, destination, cb){
+    console.log('id uploader--',id,file)
 
     if (!file) {
-      return cb();
+    console.log('id uploader--',file)
+
+      return cb(null,null);
     }
     var date = new Date();
     var newFileName =
@@ -35,7 +38,7 @@ class Uploader {
       "_" +
       newFileName;
     var tempPath = file.path;
-    var dir = path.join(config.imageTempFolder + "/users/" + email);
+    var dir = path.join(config.imageTempFolder + "/" + module + "/" + id);
     //Set size image
     var imageSmallSize = config.imageSmallSize;
     var imageMediumSize = config.imageMediumSize;
@@ -55,40 +58,58 @@ class Uploader {
     }
 
     var fileFullPath = dir + "/" + fileName;
+    console.log('fileFullPath--',fileFullPath)
+
     async.auto({
       imageFullPath: function(callback){
-        mv(tempPath, fileFullPath, function(err) {
+        file.mv(fileFullPath, function(err) {
           console.log('error--',err)
           if (err) {
             return cb(err);
           }
           console.log('fileFullPath--',fileFullPath)
 
-          callback(null, "/uploads/images/users/"+email+"/"+fileName);
+          callback(null, destination + id + "/" + fileName);
         });
       },
-      imageThumbPath: ['imageFullPath', function(result, callback){
-        GM.resize(fileFullPath, gmSmallOptions, (err,data)=>{
-          if (err) {
-            return callback(err);
-          }
-          callback(null, "/uploads/images/users/"+email + "/"+imageMediumName);
-        });
-      }],
-      imageMediumPath: ['imageThumbPath', function(result, callback){
-        GM.resize(fileFullPath, gmMediumOptions, (err,data)=>{
-          if(err){
-            return callback(err);
-          }
-          callback(null, "/uploads/images/users/"+email + "/"+imageSmallName);
-        });
-      }]
+      imageThumbPath:  function(callback){
+        Jimp.read(fileFullPath)
+            .then(lenna => {
+               lenna
+                .resize(imageSmallSize.width, imageSmallSize.height) // resize
+                .quality(60) // set JPEG quality
+                .write(imageThumbPath); // save
+
+                callback(null, destination + id + "/"+imageSmallName);
+
+            })
+            .catch(err => {
+              console.error(err);
+            });
+      
+      },
+      imageMediumPath:  function(callback){
+          Jimp.read(fileFullPath)
+          .then(lenna => {
+            lenna
+              .resize(imageMediumSize.width, imageMediumSize.height) // resize
+              .quality(60) // set JPEG quality
+              .write(imageMediumPath); // save
+
+              callback(null, destination + id + "/"+imageMediumName);
+
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      }
     }, function(err, result){
+      console.log('result---',result)
       cb(err, result);
     });
   }
 
-  static uploadImage(file, email, cb){
+  static uploadImage(file, id, cb){
     if (!file) {
       return cb();
     }
@@ -106,19 +127,19 @@ class Uploader {
       date.getSeconds().toString() +
       "_" +
       newFileName;
-    var dir = path.join(config.imageTempFolder + "/users/" + email);
+    var dir = path.join(config.imageTempFolder + "/users/" + id);
     if (!fs.existsSync(dir)){
       UtilsHelper.mkdirpSync(dir,'0777');
     }
-    mv(file.path, dir +"/"+fileName, (err, data) => {
+    file.mv(dir +"/"+fileName, (err, data) => {
       if (err) {
         return cb(err);
       }
-      cb(null, "/uploads/images/users/"+email+"/"+fileName);
+      cb(null, "/uploads/images/users/"+id+"/"+fileName);
     });
   }
 
-  static uploadImageToS3(file, email, cb){
+  static uploadImageToS3(file, id, cb){
     if (!file) {
       return cb();
     }
@@ -127,13 +148,13 @@ class Uploader {
       + date.getDate().toString() + date.getHours().toString()
       + date.getMinutes().toString() + date.getSeconds().toString()
       + "_" +file.name;
-    var dir = path.join(config.imageTempFolder + "/users/" + email);
+    var dir = path.join(config.imageTempFolder + "/users/" + id);
     if (!fs.existsSync(dir)){
       UtilsHelper.mkdirpSync(dir,'0777');
     }
 
     let filePath = dir +"/"+fileName;
-    mv(file.path, filePath, function(err, data) {
+    file.mv(file.path, filePath, function(err, data) {
       if (err) {
         return cb(err);
       }
@@ -175,7 +196,7 @@ class Uploader {
     if (!fs.existsSync(dir)) {
       UtilsHelper.mkdirpSync(dir,'0777');
     }
-    mv(file.path, dir +"/"+fileName, function(err) {
+    file.mv( dir +"/"+fileName, function(err) {
       if (err) {
         return cb(err);
       }
@@ -207,7 +228,7 @@ class Uploader {
       UtilsHelper.mkdirpSync(dir,'0777');
     }
     var filePath = dir +"/"+fileName;
-    mv(file.path, dir +"/"+fileName, function(err) {
+    file.mv( dir +"/"+fileName, function(err) {
       if (err) {
         return cb(err);
       }
@@ -222,8 +243,8 @@ class Uploader {
     });
   }
 
-  static uploadImageWithThumbnailsToS3(file, email, cb) {
-    console.log('email uploader s3--',email,file)
+  static uploadImageWithThumbnailsToS3(file, id, cb) {
+    console.log('id uploader s3--',id,file)
 
     if (!file) {
       return cb();
@@ -243,7 +264,7 @@ class Uploader {
       "_" +
       newFileName;
     var tempPath = file.path;
-    var dir = path.join(config.imageTempFolder + "/users/" + email);
+    var dir = path.join(config.imageTempFolder + "/users/" + id);
 
     if (!fs.existsSync(dir)) {
       UtilsHelper.mkdirpSync(dir, '0777');

@@ -117,7 +117,7 @@ class UserController {
   static update(req, res, next) {
     //TODO - update validator
     UserValidator.validateUpdating({...req.body, ...req.params}).then(user => {
-
+    console.log('req.files--->', req.files)
     var userId = req.params.id;
     UserBusiness.findOne({_id: userId})
       .then(user => {
@@ -143,8 +143,74 @@ class UserController {
           user.password = req.body.password;
         }
         user.role = req.body.role?req.body.role:user.role;
-        user.emailVerify = req.body.emailVerify?req.body.emailVerify:user.emailVerify;
+        user.emailVerify = ( 
+                              (req.body.emailVerify === true || req.body.emailVerify == 'true') || 
+                              (req.body.emailVerify === false || req.body.emailVerify == 'false') 
+                            ) ? req.body.emailVerify:user.emailVerify;
 
+        if( req.files && req.files.photo)
+        {
+         if(user.photo && user.photo!=''){
+              UserBusiness.unlinkFile(user.photo)
+              .then( unlinkres => { console.log('unlinkres-',unlinkres)})
+              .catch( err => {
+                return  res.status(401).send(
+                  {
+                    statuscode:401,
+                    message:err.message,
+                    response:err
+                  });
+                })
+          }
+          console.log('user.imageMediumPath--',user.imageMediumPath)
+          if(user.imageMediumPath && user.imageMediumPath!=''){
+            UserBusiness.unlinkFile(user.imageMediumPath)
+            .then( unlinkres => { console.log('unlinkres-',unlinkres)})
+            .catch( err => {
+                res.status(401).send(
+                {
+                  statuscode:401,
+                  message:err.message,
+                  response:err
+                });
+              })
+          }
+          if(user.imageThumbPath && user.imageThumbPath!=''){
+            UserBusiness.unlinkFile(user.imageThumbPath)
+            .then( unlinkres => { console.log('unlinkres-',unlinkres)})
+            .catch( err => {
+                res.status(401).send(
+                {
+                  statuscode:401,
+                  message:err.message,
+                  response:err
+                });
+              })
+          } 
+        }
+        async.waterfall([
+          function(cb) { 
+            if (!req.files) {
+               cb();
+               if (!req.files.photo) {
+                cb();
+               }
+            }
+
+            user.imageType = config.imageType;
+            let Func = config.imageType == 's3' ? Uploader.uploadImageWithThumbnailsToS3 : Uploader.uploadImageWithThumbnails;
+            Func(req.files.photo, req.user._id, 'users', '/uploads/images/users/', function(err, result) {
+             
+              if(result)
+              {
+              user.photo  = result.imageFullPath;
+              user.imageMediumPath  = result.imageMediumPath;
+              user.imageThumbPath  = result.imageThumbPath;
+              }
+              cb();
+            });
+          }
+        ], function() {
           UserBusiness.update(user)
             .then((updatedUserList) => {
                 res.status(200)
@@ -152,7 +218,7 @@ class UserController {
                   {
                     statuscode:200,
                     message:"User Updated Successfully",
-                    response:updatedUserList
+                    response:user
                   });
             })           
             .catch((err) => {
@@ -165,7 +231,7 @@ class UserController {
                 });
             
             });
-        
+          });
     })
   })
   .catch((err) => 
