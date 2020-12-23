@@ -54,7 +54,6 @@ module.exports = {
     UploadUserProfilePath:'public/uploads/user/profilePic/',
     userDemoPicPath: "uploads/dummy/demo-profile.png",
     
-
     // socketUrl: "https://nodeserver.mydevfactory.com:1426/",
     //liveUrl: "http://localhost:3003/",
     liveUrl: "https://nodeserver.mydevfactory.com:3003/",
